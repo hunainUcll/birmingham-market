@@ -1,0 +1,5 @@
+﻿import { readdir,readFile,writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import path from 'node:path';
+async function walk(dir){for(const item of await readdir(dir,{withFileTypes:true})){const file=path.join(dir,item.name);if(item.isDirectory())await walk(file);else if(file.endsWith('.html')){let html=await readFile(file,'utf8');const hashes=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].filter(m=>! /\bsrc\s*=/.test(m[1])).map(m=>`'sha256-${createHash('sha256').update(m[2]).digest('base64')}'`);const policy=["default-src 'self'",`script-src 'self' ${[...new Set(hashes)].join(' ')}`,"style-src 'self' 'unsafe-inline'","img-src 'self' data:","font-src 'self'","connect-src 'self'","object-src 'none'","base-uri 'self'","form-action 'none'"].join('; ');const meta=`<meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="referrer" content="strict-origin-when-cross-origin">`;html=html.replace(/<head>/,`<head>${meta}`);await writeFile(file,html);}}}
+await walk('out');await writeFile('out/.nojekyll','');console.log('Added hash-based script policy, referrer policy, and .nojekyll to static export.');

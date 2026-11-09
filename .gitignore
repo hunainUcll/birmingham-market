@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+test-results/
+playwright-report/
+.env*
+!.env.example
+Pictures/
+photo-contact-sheet.jpg
+
+# Local review artifacts and original-photo inventory
+qa/
+photo-selection.json
